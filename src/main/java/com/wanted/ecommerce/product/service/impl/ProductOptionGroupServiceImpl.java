@@ -6,8 +6,6 @@ import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductOption;
 import com.wanted.ecommerce.product.domain.ProductOptionGroup;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest.ProductOptionGroupRequest;
-import com.wanted.ecommerce.product.dto.response.ProductOptionResponse;
-import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductOptionGroupResponse;
 import com.wanted.ecommerce.product.repository.ProductOptionGroupRepository;
 import com.wanted.ecommerce.product.repository.ProductOptionRepository;
 import com.wanted.ecommerce.product.service.ProductOptionGroupService;
@@ -54,20 +52,6 @@ public class ProductOptionGroupServiceImpl implements ProductOptionGroupService 
     @Override
     public void deleteProductOptionGroup(Long productId) {
         optionGroupRepository.deleteByProductId(productId);
-    }
-
-    @Override
-    public List<ProductOptionGroupResponse> createOptionGroupResponse(
-        List<ProductOptionGroup> optionGroups) {
-        return optionGroups.stream()
-            .map(optionGroup -> {
-                List<ProductOptionResponse> options = optionGroup.getOptions().stream()
-                    .map(ProductOptionResponse::of)
-                    .toList();
-
-                return ProductOptionGroupResponse.of(optionGroup, options);
-            })
-            .toList();
     }
 
     private ProductOptionGroup getOptionGroupById(Long id) {

@@ -1,7 +1,6 @@
 package com.wanted.ecommerce.product.service.impl;
 
 import com.wanted.ecommerce.category.domain.Category;
-import com.wanted.ecommerce.category.dto.response.CategoryResponse;
 import com.wanted.ecommerce.category.service.CategoryService;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductCategory;
@@ -39,15 +38,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             })
             .toList();
         return productCategoryRepository.saveAll(productCategories);
-    }
-
-    @Override
-    public List<CategoryResponse> createCategoryResponse(List<ProductCategory> productCategories) {
-        return productCategories.stream().map(productCategory ->
-        {
-            Category category = productCategory.getCategory();
-            return CategoryResponse.of(category, productCategory);
-        }).toList();
     }
 
     @Override

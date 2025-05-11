@@ -14,7 +14,6 @@ import com.wanted.ecommerce.brand.dto.response.BrandDetailResponse;
 import com.wanted.ecommerce.brand.service.BrandService;
 import com.wanted.ecommerce.category.domain.Category;
 import com.wanted.ecommerce.common.dto.response.ProductItemResponse.BrandResponse;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
 import com.wanted.ecommerce.common.dto.response.ProductItemResponse.SellerResponse;
 import com.wanted.ecommerce.product.domain.Dimensions;
 import com.wanted.ecommerce.product.domain.Product;
@@ -38,6 +37,7 @@ import com.wanted.ecommerce.product.repository.ProductRepository;
 import com.wanted.ecommerce.product.service.ProductCategoryService;
 import com.wanted.ecommerce.product.service.ProductDetailService;
 import com.wanted.ecommerce.product.service.ProductImageServiceFacade;
+import com.wanted.ecommerce.product.service.ProductMapper;
 import com.wanted.ecommerce.product.service.ProductOptionGroupService;
 import com.wanted.ecommerce.product.service.ProductOptionService;
 import com.wanted.ecommerce.product.service.ProductPriceService;
@@ -93,6 +93,8 @@ class ProductServiceImplTest {
     private BrandService brandService;
     @Mock
     private ProductImageServiceFacade productImageServiceFacade;
+    @Mock
+    private ProductMapper mapper;
 
     private Product product;
     private Seller seller;
@@ -138,17 +140,13 @@ class ProductServiceImplTest {
 
     @Test
     void test_readAll_success() {
-        ProductSearchRequest request = new ProductSearchRequest(1, 10, "price:desc", "ACTIVE", 1000,
-            10000000, "1", 1, 1, true, "TEST");
+        ProductSearchRequest request = new ProductSearchRequest(1, 10, "price:desc", "ACTIVE",
+            new BigDecimal(1000), new BigDecimal(10000000), "1", 1L, 1L, true, "TEST");
 
         PageImpl<Product> productPage = new PageImpl<>(List.of(product));
 
         when(productRepository.findAllByRequest(any(), any())).thenReturn(
             productPage);
-        when(productImageServiceFacade.getPrimaryProductImageResponse(anyLong())).thenReturn(mock(
-            ProductImageResponse.class));
-        when(reviewService.getAvgRatingByProductId(anyLong())).thenReturn(4.123);
-        when(reviewService.getReviewCountByProductId(anyLong())).thenReturn(10);
         when(productOptionService.isExistStock(anyLong(), anyInt())).thenReturn(true);
         when(brandService.createBrandResponse(any())).thenReturn(
             mock(BrandResponse.class));
@@ -170,13 +168,12 @@ class ProductServiceImplTest {
             mock(BrandDetailResponse.class));
         when(sellerService.createSellerDetailResponse(any())).thenReturn(
             mock(SellerDetailResponse.class));
-        when(productDetailService.createProductDetailResponse(any())).thenReturn(mock(
-            DetailResponse.class));
-        when(productPriceService.createPriceResponse(any())).thenReturn(
+        when(mapper.mapToProductDetailResponse(any())).thenReturn(mock(DetailResponse.class));
+        when(mapper.mapToPriceResponse(any())).thenReturn(
             mock(ProductPriceResponse.class));
-        when(productCategoryService.createCategoryResponse(any())).thenReturn(List.of());
-        when(productOptionGroupService.createOptionGroupResponse(any())).thenReturn(List.of());
-        when(productImageServiceFacade.getImageResponse(any())).thenReturn(List.of());
+        when(mapper.mapToCategoryResponses(any())).thenReturn(List.of());
+        when(mapper.mapToOptionGroupResponses(any())).thenReturn(List.of());
+        when(mapper.mapToImageResponse(any())).thenReturn(List.of());
         when(reviewService.createRatingResponse(anyLong())).thenReturn(mock(RatingResponse.class));
         when(productRepository.findRelatedProductsByCategoryId(any())).thenReturn(
             List.of(relateProduct));

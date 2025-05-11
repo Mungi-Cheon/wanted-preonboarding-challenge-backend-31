@@ -11,9 +11,9 @@ import com.wanted.ecommerce.common.exception.ErrorType;
 import com.wanted.ecommerce.common.exception.ResourceNotFoundException;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductCategory;
+import com.wanted.ecommerce.product.domain.ProductImage;
 import com.wanted.ecommerce.product.domain.ProductPrice;
 import com.wanted.ecommerce.product.domain.ProductStatus;
-import com.wanted.ecommerce.product.domain.ProductTag;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest;
 import com.wanted.ecommerce.product.dto.request.ProductSearchRequest;
 import com.wanted.ecommerce.product.dto.response.ProductListResponse;
@@ -29,11 +29,13 @@ import com.wanted.ecommerce.product.repository.ProductRepository;
 import com.wanted.ecommerce.product.service.ProductCategoryService;
 import com.wanted.ecommerce.product.service.ProductDetailService;
 import com.wanted.ecommerce.product.service.ProductImageServiceFacade;
+import com.wanted.ecommerce.product.service.ProductMapper;
 import com.wanted.ecommerce.product.service.ProductOptionGroupService;
 import com.wanted.ecommerce.product.service.ProductOptionService;
 import com.wanted.ecommerce.product.service.ProductPriceService;
 import com.wanted.ecommerce.product.service.ProductService;
 import com.wanted.ecommerce.product.service.ProductTagService;
+import com.wanted.ecommerce.review.domain.Review;
 import com.wanted.ecommerce.review.dto.response.RatingResponse;
 import com.wanted.ecommerce.review.service.ReviewService;
 import com.wanted.ecommerce.seller.domain.Seller;
@@ -57,15 +59,16 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryService productCategoryService;
     private final ProductDetailService productDetailService;
-    private final ProductImageServiceFacade productImageServiceFacade;
     private final ProductOptionGroupService productOptionGroupService;
     private final ProductOptionService productOptionService;
     private final ProductPriceService productPriceService;
-    private final ReviewService reviewService;
     private final ProductTagService productTagService;
+    private final ReviewService reviewService;
     private final TagService tagService;
     private final SellerService sellerService;
     private final BrandService brandService;
+    private final ProductImageServiceFacade productImageServiceFacade;
+    private final ProductMapper mapper;
 
     @Transactional
     @Override
@@ -83,15 +86,18 @@ public class ProductServiceImpl implements ProductService {
             ProductStatus.valueOf(request.getStatus())
         );
 
-        Product saved = productRepository.save(product);
+        product = productRepository.save(product);
 
-        productCategoryService.saveProductCategories(saved, request.getCategories());
-        productDetailService.saveDetail(saved, request.getDetail());
-        productOptionGroupService.saveProductOptionsAndGroup(saved, request.getOptionGroups());
-        productImageServiceFacade.getProductImages(saved, request.getImages());
-        productPriceService.saveProductPrice(saved, request.getPrice());
-        createProductTags(saved, request.getTags());
-        return ProductRegisterResponse.of(saved);
+        productCategoryService.saveProductCategories(product, request.getCategories());
+        productDetailService.saveDetail(product, request.getDetail());
+        productOptionGroupService.saveProductOptionsAndGroup(product, request.getOptionGroups());
+        productImageServiceFacade.getProductImages(product, request.getImages());
+        productPriceService.saveProductPrice(product, request.getPrice());
+
+        List<Tag> tags = request.getTags().stream().map(tagService::getTagById).toList();
+        productTagService.saveAllProductTags(product, tags);
+
+        return ProductRegisterResponse.of(product);
     }
 
     @Transactional(readOnly = true)
@@ -103,14 +109,15 @@ public class ProductServiceImpl implements ProductService {
         return products.map(product -> {
 
             ProductPrice price = product.getPrice();
-            ProductImageResponse primaryImageResponse = productImageServiceFacade.getPrimaryProductImageResponse(
-                product.getId());
 
-            double avgRating = reviewService.getAvgRatingByProductId(product.getId());
+            ProductImageResponse primaryImageResponse = product.getImages().stream()
+                .filter(ProductImage::isPrimary).findFirst().map(ProductImageResponse::of)
+                .orElse(null);
 
-            double rating = Double.parseDouble(String.format("%.2f", avgRating));
+            double avgRating = product.getReviews().stream().mapToDouble(Review::getRating)
+                .average().orElse(0.0);
 
-            int reviewCount = reviewService.getReviewCountByProductId(product.getId());
+            int reviewCount = product.getReviews().size();
 
             Boolean inStock = productOptionService.isExistStock(product.getId(), 0);
 
@@ -119,7 +126,7 @@ public class ProductServiceImpl implements ProductService {
             SellerResponse sellerResponse = sellerService.createSellerResponse(product.getSeller());
 
             return ProductListResponse.of(product, price, primaryImageResponse, brandResponse,
-                sellerResponse, rating, reviewCount, inStock);
+                sellerResponse, avgRating, reviewCount, inStock);
         });
     }
 
@@ -135,27 +142,30 @@ public class ProductServiceImpl implements ProductService {
         SellerDetailResponse sellerDetailResponse = sellerService.createSellerDetailResponse(
             product.getSeller());
         // product detail
-        DetailResponse detailResponse = productDetailService.createProductDetailResponse(
+        DetailResponse detailResponse = mapper.mapToProductDetailResponse(
             product.getDetail());
         // price
-        ProductPriceResponse priceResponse = productPriceService.createPriceResponse(
+        ProductPriceResponse priceResponse = mapper.mapToPriceResponse(
             product.getPrice());
         // categories
-        List<CategoryResponse> categoryResponses = productCategoryService.createCategoryResponse(
+        List<CategoryResponse> categoryResponses = mapper.mapToCategoryResponses(
             product.getCategories());
         //option groups
-        List<ProductOptionGroupResponse> optionGroupResponses = productOptionGroupService.createOptionGroupResponse(
+        List<ProductOptionGroupResponse> optionGroupResponses = mapper.mapToOptionGroupResponses(
             product.getOptionGroups());
         // images
-        List<ProductImageCreateResponse> imageResponses = productImageServiceFacade.getImageResponse(
+        List<ProductImageCreateResponse> imageResponses = mapper.mapToImageResponse(
             product.getImages());
         // tags
-        List<TagResponse> tagResponses = createTagResponse(product);
+        List<TagResponse> tagResponses = product.getTags().stream().map(productTag ->
+            TagResponse.of(productTag.getTag())).toList();
         // rating
         RatingResponse ratingResponse = reviewService.createRatingResponse(product.getId());
         // related products
-        List<RelatedProductResponse> relatedProductResponses = createRelatedProductResponse(
-            product.getCategories());
+        List<Product> relatedProducts = getRelatedProduct(product.getCategories());
+        List<RelatedProductResponse> relatedProductResponses = mapper.mapToRelatedProductResponses(
+            relatedProducts);
+
         return ProductResponse.of(product, sellerDetailResponse, brandDetailResponse,
             detailResponse, priceResponse, categoryResponses, optionGroupResponses, imageResponses,
             tagResponses, ratingResponse, relatedProductResponses);
@@ -203,42 +213,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(readOnly = true)
-    private List<RelatedProductResponse> createRelatedProductResponse(
-        List<ProductCategory> categories) {
-        ProductCategory primaryCategory = categories.stream()
-            .filter(ProductCategory::isPrimary)
-            .findFirst()
-            .orElseThrow(() -> new ResourceNotFoundException(ErrorType.RESOURCE_NOT_FOUND));
-
-        List<Product> relatedProducts = productRepository.findRelatedProductsByCategoryId(
-            primaryCategory.getCategory().getId());
-        return relatedProducts.stream()
-            .map(this::mapRelatedProductResponse).toList();
-    }
-
-    @Transactional(readOnly = true)
     @Override
     public Product getProductById(long id) {
         return productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(ErrorType.RESOURCE_NOT_FOUND));
     }
 
-    private List<TagResponse> createTagResponse(Product product) {
-        return product.getTags().stream().map(productTag ->
-            TagResponse.of(productTag.getTag())).toList();
-    }
-
-    private List<Long> createProductTags(Product saved, List<Long> tagIds) {
-        List<Tag> tags = tagIds.stream().map(tagService::getTagByTagId).toList();
-        List<ProductTag> savedTagList = productTagService.saveAllProductTags(saved, tags);
-        return savedTagList.stream().map(ProductTag::getId).toList();
-    }
-
     @Transactional(readOnly = true)
-    private RelatedProductResponse mapRelatedProductResponse(Product relatedProduct){
-        ProductImageResponse imageResponse = productImageServiceFacade.getPrimaryProductImageResponse(
-            relatedProduct.getId());
-        ProductPrice productPrice = relatedProduct.getPrice();
-        return RelatedProductResponse.of(relatedProduct, productPrice, imageResponse);
+    private List<Product> getRelatedProduct(
+        List<ProductCategory> categories) {
+        ProductCategory primaryCategory = categories.stream()
+            .filter(ProductCategory::isPrimary)
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorType.RESOURCE_NOT_FOUND));
+
+        return productRepository.findRelatedProductsByCategoryId(
+            primaryCategory.getCategory().getId());
     }
 }

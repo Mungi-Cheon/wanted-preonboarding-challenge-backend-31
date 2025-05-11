@@ -43,7 +43,7 @@ public record ProductListResponse(
             .primaryImage(image)
             .brand(brand)
             .seller(seller)
-            .rating(rating)
+            .rating(Double.parseDouble(String.format("%.2f", rating)))
             .reviewCount(reviewCount)
             .inStock(inStock)
             .status(product.getStatus().getName())

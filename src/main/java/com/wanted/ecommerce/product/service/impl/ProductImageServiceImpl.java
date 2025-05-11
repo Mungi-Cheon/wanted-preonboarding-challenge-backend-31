@@ -1,6 +1,5 @@
 package com.wanted.ecommerce.product.service.impl;
 
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductImage;
 import com.wanted.ecommerce.product.domain.ProductOption;
@@ -34,28 +33,9 @@ public class ProductImageServiceImpl implements ProductImageService {
             image -> ProductImageCreateResponse.of(image, image.getOption())).toList();
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public ProductImageResponse createPrimaryProductImageResponse(Long productId) {
-        return productImageRepository.findByProductIdAndPrimaryTrue(productId)
-            .map(ProductImageResponse::of)
-            .orElse(null);
-    }
-
     @Transactional
     @Override
     public void deleteProductImageByProductId(Long productId) {
         productImageRepository.deleteByProductId(productId);
-    }
-
-    @Override
-    public List<ProductImageCreateResponse> createImageResponse(List<ProductImage> images) {
-        return images.stream()
-            .map(image -> {
-                if (image.getOption() != null) {
-                    return ProductImageCreateResponse.of(image, image.getOption());
-                }
-                return ProductImageCreateResponse.of(image);
-            }).toList();
     }
 }

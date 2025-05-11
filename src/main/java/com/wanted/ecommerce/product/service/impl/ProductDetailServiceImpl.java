@@ -7,11 +7,8 @@ import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductDetail;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest.DimensionsRequest;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest.ProductDetailRequest;
-import com.wanted.ecommerce.product.dto.response.ProductResponse.DetailResponse;
-import com.wanted.ecommerce.product.dto.response.ProductResponse.DimensionsResponse;
 import com.wanted.ecommerce.product.repository.ProductDetailRepository;
 import com.wanted.ecommerce.product.service.ProductDetailService;
-import java.math.RoundingMode;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,16 +40,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         DimensionsRequest dimensionsRequest = request.getDimensions();
         Dimensions dimensions = Dimensions.of(dimensionsRequest);
         detail.update(request, dimensions);
-    }
-
-    @Override
-    public DetailResponse createProductDetailResponse(ProductDetail detail) {
-        double weight = detail.getWeight()
-            .setScale(1, RoundingMode.HALF_UP)
-            .doubleValue();
-        DimensionsResponse dimensionsResponse = DimensionsResponse.of(detail.getDimensions());
-
-        return DetailResponse.of(weight, dimensionsResponse, detail);
     }
 
     @Transactional(readOnly = true)

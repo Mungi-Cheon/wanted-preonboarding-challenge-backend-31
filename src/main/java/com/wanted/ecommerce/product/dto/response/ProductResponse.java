@@ -14,6 +14,7 @@ import com.wanted.ecommerce.product.domain.ProductPrice;
 import com.wanted.ecommerce.review.dto.response.RatingResponse;
 import com.wanted.ecommerce.seller.dto.response.SellerDetailResponse;
 import com.wanted.ecommerce.tag.dto.response.TagResponse;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -118,21 +119,21 @@ public record ProductResponse(
         String slug,
         String shortDescription,
         ProductImageResponse primaryImage,
-        Integer basePrice,
-        Integer salePrice,
+        BigDecimal basePrice,
+        BigDecimal salePrice,
         String currency
     ) {
 
-        public static RelatedProductResponse of(Product product, ProductPrice price, ProductImageResponse image) {
+        public static RelatedProductResponse of(Product product, ProductImageResponse image) {
             return RelatedProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .slug(product.getSlug())
                 .shortDescription(product.getShortDescription())
                 .primaryImage(image)
-                .basePrice(price.getBasePrice().intValue())
-                .salePrice(price.getSalePrice().intValue())
-                .currency(price.getCurrency())
+                .basePrice(product.getPrice().getBasePrice())
+                .salePrice(product.getPrice().getSalePrice())
+                .currency(product.getPrice().getCurrency())
                 .build();
         }
     }

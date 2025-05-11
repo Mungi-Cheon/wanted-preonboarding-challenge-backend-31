@@ -1,8 +1,6 @@
 package com.wanted.ecommerce.product.service;
 
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
 import com.wanted.ecommerce.product.domain.Product;
-import com.wanted.ecommerce.product.domain.ProductImage;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest.ProductImageRequest;
 import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductImageCreateResponse;
 import java.util.List;
@@ -16,14 +14,6 @@ public class ProductImageServiceFacade {
 
     public List<ProductImageCreateResponse> getProductImages(Product product, List<ProductImageRequest> requests){
         return productImageService.createProductImages(product, requests);
-    }
-
-    public ProductImageResponse getPrimaryProductImageResponse(Long productId){
-        return productImageService.createPrimaryProductImageResponse(productId);
-    }
-
-    public List<ProductImageCreateResponse> getImageResponse(List<ProductImage> images){
-        return productImageService.createImageResponse(images);
     }
 
     public void deleteProductImageByProductId(Long productId){

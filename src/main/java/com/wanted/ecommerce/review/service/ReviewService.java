@@ -6,10 +6,6 @@ import java.util.List;
 
 public interface ReviewService {
 
-    double getAvgRatingByProductId(Long productId);
-
-    Integer getReviewCountByProductId(Long productId);
-
     List<Review> getReviews(Long productId);
 
     RatingResponse createRatingResponse(Long productId);

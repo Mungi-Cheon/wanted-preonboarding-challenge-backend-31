@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,24 +16,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ReviewServiceImpl implements ReviewService{
+public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
-
-    @Override
-    public double getAvgRatingByProductId(Long productId) {
-        return Optional.ofNullable(
-                reviewRepository.findAvgRatingByProductId(productId))
-            .orElse(0.0);
-    }
-
-    @Override
-    public Integer getReviewCountByProductId(Long productId) {
-        return Optional.ofNullable(
-                reviewRepository.findReviewCountByProductId(productId))
-            .orElse(0L)
-            .intValue();
-    }
 
     @Override
     public List<Review> getReviews(Long productId) {
@@ -43,8 +27,8 @@ public class ReviewServiceImpl implements ReviewService{
 
     @Override
     public RatingResponse createRatingResponse(Long productId) {
-        double average = getAvgRatingByProductId(productId);
         List<Review> reviews = getReviews(productId);
+        double average = reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
         Map<Integer, Long> rating = IntStream.rangeClosed(1, 5)
             .boxed()
             .collect(Collectors.toMap(Function.identity(), i -> 0L));

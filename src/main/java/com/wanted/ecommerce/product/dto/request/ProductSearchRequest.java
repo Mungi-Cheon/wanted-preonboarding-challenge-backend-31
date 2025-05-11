@@ -3,6 +3,7 @@ package com.wanted.ecommerce.product.dto.request;
 import com.wanted.ecommerce.common.utils.SortUtils;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +27,13 @@ public class ProductSearchRequest {
     private String sort = "created_at:desc";
     private String status;
     @Min(value = 0, message = "최소 가격 입력값은 0 이상이어야 합니다.")
-    private Integer minPrice;
+    private BigDecimal minPrice;
     @Min(value = 0, message = "최대 가격 입력값은 0 이상이어야 합니다.")
-    private Integer maxPrice;
+    private BigDecimal maxPrice;
     @Getter(AccessLevel.NONE)
     private String category;
-    private Integer seller;
-    private Integer brand;
+    private Long seller;
+    private Long brand;
     private Boolean inStock;
     private String search;
 

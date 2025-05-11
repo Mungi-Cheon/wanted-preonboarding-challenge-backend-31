@@ -5,7 +5,6 @@ import com.wanted.ecommerce.common.exception.ResourceNotFoundException;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductPrice;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest.ProductPriceRequest;
-import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductPriceResponse;
 import com.wanted.ecommerce.product.repository.ProductPriceRepository;
 import com.wanted.ecommerce.product.service.ProductPriceService;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +35,5 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     @Override
     public void updatePrice(ProductPrice price, ProductPriceRequest request) {
         price.update(request);
-    }
-
-    @Override
-    public ProductPriceResponse createPriceResponse(ProductPrice price) {
-        return ProductPriceResponse.of(price);
     }
 }

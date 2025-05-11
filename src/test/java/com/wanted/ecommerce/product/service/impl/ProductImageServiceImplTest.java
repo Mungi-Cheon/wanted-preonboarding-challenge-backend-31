@@ -1,7 +1,6 @@
 package com.wanted.ecommerce.product.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -9,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductImage;
 import com.wanted.ecommerce.product.domain.ProductOption;
@@ -22,7 +20,6 @@ import com.wanted.ecommerce.product.service.ProductOptionService;
 import com.wanted.ecommerce.product.service.ProductService;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,25 +103,8 @@ class ProductImageServiceImplTest {
     }
 
     @Test
-    void test_createPrimaryProductImageResponse_success() {
-        when(imageRepository.findByProductIdAndPrimaryTrue(anyLong())).thenReturn(
-            Optional.ofNullable(image));
-        ProductImageResponse response = imageService.createPrimaryProductImageResponse(1L);
-        assertNotNull(response);
-    }
-
-    @Test
     void test_deleteProductImageByProductId_success() {
         imageService.deleteProductImageByProductId(1L);
         verify(imageRepository).deleteByProductId(anyLong());
-    }
-
-    @Test
-    void test_createImageResponse_success() {
-        List<ProductImageCreateResponse> responses = imageService.createImageResponse(
-            List.of(image));
-        assertFalse(responses.isEmpty());
-        assertEquals(image.getId(), responses.get(0).id());
-
     }
 }

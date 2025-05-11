@@ -14,7 +14,7 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
 
     @Override
-    public Tag getTagByTagId(Long tagId) {
+    public Tag getTagById(Long tagId) {
         return tagRepository.findById(tagId)
             .orElseThrow(() -> new ResourceNotFoundException(ErrorType.RESOURCE_NOT_FOUND));
     }

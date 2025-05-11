@@ -7,9 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    @Query("select avg(re.rating) from Review re where re.product.id = :productId")
-    Double findAvgRatingByProductId(Long productId);
-
     @Query("select count(re) from Review re where re.product.id = :productId")
     Long findReviewCountByProductId(Long productId);
 

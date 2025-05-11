@@ -4,5 +4,5 @@ import com.wanted.ecommerce.tag.domain.Tag;
 
 public interface TagService {
 
-    Tag getTagByTagId(Long tagId);
+    Tag getTagById(Long tagId);
 }

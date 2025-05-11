@@ -10,11 +10,11 @@ import com.wanted.ecommerce.product.domain.ProductStatus;
 import com.wanted.ecommerce.product.domain.QProduct;
 import com.wanted.ecommerce.product.domain.QProductCategory;
 import com.wanted.ecommerce.product.domain.QProductOption;
+import com.wanted.ecommerce.product.domain.QProductOptionGroup;
 import com.wanted.ecommerce.product.domain.QProductPrice;
 import com.wanted.ecommerce.product.dto.request.ProductSearchRequest;
 import com.wanted.ecommerce.review.domain.QReview;
 import com.wanted.ecommerce.seller.domain.QSeller;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,38 +35,39 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
     private final QSeller seller = QSeller.seller;
     private final QBrand brand = QBrand.brand;
     private final QProductOption option = QProductOption.productOption;
+    private final QProductOptionGroup optionGroup = QProductOptionGroup.productOptionGroup;
 
     @Override
     public PageImpl<Product> findAllByRequest(ProductSearchRequest request, Pageable pageable) {
         var query = queryFactory
-            .selectFrom(product)
-            .join(product.brand, brand).fetchJoin()
-            .join(product.seller, seller).fetchJoin();
+            .selectFrom(product);
 
         // dynamic where
         List<Predicate> conditions = new ArrayList<>();
+
         // status
-        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+        if (request.getStatus() != null) {
             conditions.add(product.status.eq(ProductStatus.valueOf(request.getStatus())));
         }
 
-        // price (min, max)
-        if (request.getMinPrice() != null || request.getMaxPrice() != null) {
-            query.leftJoin(product.price, price);
+        if(request.getMinPrice() != null || request.getMaxPrice() != null){
+            query.join(product.price, price).fetchJoin();
+        }
 
-            if (request.getMinPrice() != null) {
-                conditions.add(price.basePrice.goe(BigDecimal.valueOf(request.getMinPrice())));
-            }
+        // min price
+        if(request.getMinPrice() != null){
+            conditions.add(price.basePrice.goe(request.getMinPrice()));
+        }
 
-            if (request.getMaxPrice() != null) {
-                conditions.add(price.basePrice.loe(BigDecimal.valueOf(request.getMaxPrice())));
-            }
+        // max price
+        if(request.getMaxPrice() != null){
+            conditions.add(price.basePrice.loe(request.getMaxPrice()));
         }
 
         // category
         if (request.getCategory() != null && !request.getCategory().isEmpty()) {
-            query.leftJoin(product.categories, productCategory)
-                .leftJoin(productCategory.category, category);
+            query.join(product.categories, productCategory).fetchJoin();
+            query.join(productCategory.category, category).fetchJoin();
             conditions.add(category.id.in(request.getCategory().stream()
                 .map(Long::valueOf)
                 .toList()));
@@ -74,15 +75,18 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
 
         // seller
         if (request.getSeller() != null) {
-            conditions.add(seller.id.eq(request.getSeller().longValue()));
+            query.join(product.seller, seller).fetchJoin();
+            conditions.add(seller.id.eq(request.getSeller()));
         }
         // brand
         if (request.getBrand() != null) {
-            conditions.add(brand.id.eq(request.getBrand().longValue()));
+            query.join(product.brand, brand).fetchJoin();
+            conditions.add(brand.id.eq(request.getBrand()));
         }
         // stock
         if (request.getInStock() != null) {
-            query.join(option).on(option.optionGroup.product.eq(product));
+            query.join(product.optionGroups, optionGroup).fetchJoin();
+            query.join(option).on(option.optionGroup.eq(optionGroup)).fetchJoin();
 
             if (Boolean.TRUE.equals(request.getInStock())) {
                 conditions.add(option.stock.gt(0));
@@ -93,11 +97,9 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
         // search
         if (request.getSearch() != null && !request.getSearch().isBlank()) {
             String keyword = "%" + request.getSearch() + "%";
-            conditions.add(
-                product.name.like(keyword)
-                    .or(product.shortDescription.like(keyword))
-                    .or(product.fullDescription.like(keyword))
-            );
+            conditions.add(product.name.like(keyword));
+            conditions.add(product.shortDescription.like(keyword));
+            conditions.add(product.fullDescription.like(keyword));
         }
         query.where(conditions.toArray(new Predicate[0]));
 
@@ -110,12 +112,12 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
                 switch (field) {
                     case "created_at" -> query.orderBy(isAsc ? product.createdAt.asc() : product.createdAt.desc());
                     case "price" -> {
-                        if(request.getMaxPrice() == null & request.getMaxPrice() == null) query.leftJoin(product.price, price);
+                        if(request.getMaxPrice() == null & request.getMaxPrice() == null) query.join(product.price, price);
                         query.orderBy(isAsc ? price.basePrice.asc() : price.basePrice.desc());
                     }
                     case "rating" -> {
                         QReview review = QReview.review;
-                        query.leftJoin(review).on(review.product.eq(product));
+                        query.join(review).on(review.product.eq(product));
                         query.groupBy(product.id);
                         query.orderBy(isAsc ? review.rating.avg().asc() : review.rating.avg().desc());
                     }

@@ -36,11 +36,9 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductRegisterResponse>> createProduct(
         @Valid @RequestBody ProductRegisterRequest productRegisterRequest
     ) {
-        ApiResponse<ProductRegisterResponse> response = ApiResponse.success(
-            productService.registerProduct(productRegisterRequest),
-            MessageConstants.CREATED_PRODUCTS.getMessage());
+        ProductRegisterResponse response = productService.registerProduct(productRegisterRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(response);
+            .body(ApiResponse.success(response, MessageConstants.CREATED_PRODUCTS.getMessage()));
     }
 
     @GetMapping
