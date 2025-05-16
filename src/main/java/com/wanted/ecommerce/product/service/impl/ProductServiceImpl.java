@@ -4,15 +4,10 @@ import com.wanted.ecommerce.brand.domain.Brand;
 import com.wanted.ecommerce.brand.dto.response.BrandDetailResponse;
 import com.wanted.ecommerce.brand.service.BrandService;
 import com.wanted.ecommerce.category.dto.response.CategoryResponse;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.BrandResponse;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.SellerResponse;
 import com.wanted.ecommerce.common.exception.ErrorType;
 import com.wanted.ecommerce.common.exception.ResourceNotFoundException;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductCategory;
-import com.wanted.ecommerce.product.domain.ProductImage;
-import com.wanted.ecommerce.product.domain.ProductPrice;
 import com.wanted.ecommerce.product.domain.ProductStatus;
 import com.wanted.ecommerce.product.dto.request.ProductRegisterRequest;
 import com.wanted.ecommerce.product.dto.request.ProductSearchRequest;
@@ -29,13 +24,11 @@ import com.wanted.ecommerce.product.repository.ProductRepository;
 import com.wanted.ecommerce.product.service.ProductCategoryService;
 import com.wanted.ecommerce.product.service.ProductDetailService;
 import com.wanted.ecommerce.product.service.ProductImageServiceFacade;
-import com.wanted.ecommerce.product.service.ProductMapper;
+import com.wanted.ecommerce.common.mapper.ProductMapper;
 import com.wanted.ecommerce.product.service.ProductOptionGroupService;
-import com.wanted.ecommerce.product.service.ProductOptionService;
 import com.wanted.ecommerce.product.service.ProductPriceService;
 import com.wanted.ecommerce.product.service.ProductService;
 import com.wanted.ecommerce.product.service.ProductTagService;
-import com.wanted.ecommerce.review.domain.Review;
 import com.wanted.ecommerce.review.dto.response.RatingResponse;
 import com.wanted.ecommerce.review.service.ReviewService;
 import com.wanted.ecommerce.seller.domain.Seller;
@@ -60,7 +53,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCategoryService productCategoryService;
     private final ProductDetailService productDetailService;
     private final ProductOptionGroupService productOptionGroupService;
-    private final ProductOptionService productOptionService;
     private final ProductPriceService productPriceService;
     private final ProductTagService productTagService;
     private final ReviewService reviewService;
@@ -106,28 +98,7 @@ public class ProductServiceImpl implements ProductService {
         int pageNumber = Math.max(0, request.getPage() - 1);
         Pageable pageable = PageRequest.of(pageNumber, request.getPerPage());
         Page<Product> products = productRepository.findAllByRequest(request, pageable);
-        return products.map(product -> {
-
-            ProductPrice price = product.getPrice();
-
-            ProductImageResponse primaryImageResponse = product.getImages().stream()
-                .filter(ProductImage::isPrimary).findFirst().map(ProductImageResponse::of)
-                .orElse(null);
-
-            double avgRating = product.getReviews().stream().mapToDouble(Review::getRating)
-                .average().orElse(0.0);
-
-            int reviewCount = product.getReviews().size();
-
-            Boolean inStock = productOptionService.isExistStock(product.getId(), 0);
-
-            BrandResponse brandResponse = brandService.createBrandResponse(product.getBrand());
-
-            SellerResponse sellerResponse = sellerService.createSellerResponse(product.getSeller());
-
-            return ProductListResponse.of(product, price, primaryImageResponse, brandResponse,
-                sellerResponse, avgRating, reviewCount, inStock);
-        });
+        return products.map(mapper::mapToProductListResponse);
     }
 
     @Transactional(readOnly = true)

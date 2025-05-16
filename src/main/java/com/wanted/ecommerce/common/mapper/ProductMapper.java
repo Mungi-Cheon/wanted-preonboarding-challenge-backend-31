@@ -1,14 +1,18 @@
-package com.wanted.ecommerce.product.service;
+package com.wanted.ecommerce.common.mapper;
 
 import com.wanted.ecommerce.category.domain.Category;
 import com.wanted.ecommerce.category.dto.response.CategoryResponse;
+import com.wanted.ecommerce.common.dto.response.ProductItemResponse.BrandResponse;
 import com.wanted.ecommerce.common.dto.response.ProductItemResponse.ProductImageResponse;
+import com.wanted.ecommerce.common.dto.response.ProductItemResponse.SellerResponse;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductCategory;
 import com.wanted.ecommerce.product.domain.ProductDetail;
 import com.wanted.ecommerce.product.domain.ProductImage;
 import com.wanted.ecommerce.product.domain.ProductOptionGroup;
 import com.wanted.ecommerce.product.domain.ProductPrice;
+import com.wanted.ecommerce.product.domain.ProductStatus;
+import com.wanted.ecommerce.product.dto.response.ProductListResponse;
 import com.wanted.ecommerce.product.dto.response.ProductOptionResponse;
 import com.wanted.ecommerce.product.dto.response.ProductResponse.DetailResponse;
 import com.wanted.ecommerce.product.dto.response.ProductResponse.DimensionsResponse;
@@ -16,10 +20,35 @@ import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductImageCre
 import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductOptionGroupResponse;
 import com.wanted.ecommerce.product.dto.response.ProductResponse.ProductPriceResponse;
 import com.wanted.ecommerce.product.dto.response.ProductResponse.RelatedProductResponse;
+import com.wanted.ecommerce.review.domain.Review;
 import java.math.RoundingMode;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductMapper {
+
+    public ProductListResponse mapToProductListResponse(Product product){
+        ProductPrice price = product.getPrice();
+
+        ProductImageResponse primaryImageResponse = product.getImages().stream()
+            .filter(ProductImage::isPrimary).findFirst().map(ProductImageResponse::of)
+            .orElse(null);
+
+        double avgRating = product.getReviews().stream().mapToDouble(Review::getRating)
+            .average().orElse(0.0);
+
+        int reviewCount = product.getReviews().size();
+
+        boolean inStock = product.getStatus().equals(ProductStatus.ACTIVE);
+
+        BrandResponse brandResponse = BrandResponse.of(product.getBrand());
+
+        SellerResponse sellerResponse = SellerResponse.of(product.getSeller());
+
+        return ProductListResponse.of(product, price, primaryImageResponse, brandResponse,
+            sellerResponse, avgRating, reviewCount, inStock);
+    }
 
     public List<RelatedProductResponse> mapToRelatedProductResponses(
         List<Product> relatedProducts) {

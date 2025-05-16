@@ -3,7 +3,6 @@ package com.wanted.ecommerce.product.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -13,8 +12,6 @@ import com.wanted.ecommerce.brand.domain.Brand;
 import com.wanted.ecommerce.brand.dto.response.BrandDetailResponse;
 import com.wanted.ecommerce.brand.service.BrandService;
 import com.wanted.ecommerce.category.domain.Category;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.BrandResponse;
-import com.wanted.ecommerce.common.dto.response.ProductItemResponse.SellerResponse;
 import com.wanted.ecommerce.product.domain.Dimensions;
 import com.wanted.ecommerce.product.domain.Product;
 import com.wanted.ecommerce.product.domain.ProductCategory;
@@ -37,7 +34,7 @@ import com.wanted.ecommerce.product.repository.ProductRepository;
 import com.wanted.ecommerce.product.service.ProductCategoryService;
 import com.wanted.ecommerce.product.service.ProductDetailService;
 import com.wanted.ecommerce.product.service.ProductImageServiceFacade;
-import com.wanted.ecommerce.product.service.ProductMapper;
+import com.wanted.ecommerce.common.mapper.ProductMapper;
 import com.wanted.ecommerce.product.service.ProductOptionGroupService;
 import com.wanted.ecommerce.product.service.ProductOptionService;
 import com.wanted.ecommerce.product.service.ProductPriceService;
@@ -147,11 +144,6 @@ class ProductServiceImplTest {
 
         when(productRepository.findAllByRequest(any(), any())).thenReturn(
             productPage);
-        when(productOptionService.isExistStock(anyLong(), anyInt())).thenReturn(true);
-        when(brandService.createBrandResponse(any())).thenReturn(
-            mock(BrandResponse.class));
-        when(sellerService.createSellerResponse(any())).thenReturn(
-            mock(SellerResponse.class));
 
         Page<ProductListResponse> result = productService.readAll(request);
 

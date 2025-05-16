@@ -29,7 +29,7 @@ public class CategoryController {
         @PathVariable int level) {
         List<CategoriesResponse> responses = categoryService.getAllCategoryByLevel(level);
         return ResponseEntity.ok(
-            ApiResponse.success(responses, MessageConstants.FUNDED_CATEGORIES.getMessage()));
+            ApiResponse.success(responses, MessageConstants.READ_CATEGORIES.getMessage()));
     }
 
     @GetMapping("/{id}/products")
@@ -41,6 +41,6 @@ public class CategoryController {
         CategoryProductListResponse response = categoryService.getCategoryProducts(id,
             includeSubcategories, pageableRequest);
         return ResponseEntity.ok(
-            ApiResponse.success(response, MessageConstants.FUNDED_CATEGORY_PRODUCTS.getMessage()));
+            ApiResponse.success(response, MessageConstants.READ_CATEGORY_PRODUCTS.getMessage()));
     }
 }

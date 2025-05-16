@@ -47,7 +47,7 @@ public class ProductController {
         Page<ProductListResponse> results = productService.readAll(request);
         PaginationResponse<ProductListResponse> response = PaginationResponse.of(results);
         return ResponseEntity.ok(
-            ApiResponse.success(response, MessageConstants.FUNDED_ALL_PRODUCTS.getMessage()));
+            ApiResponse.success(response, MessageConstants.READ_ALL_PRODUCTS.getMessage()));
     }
 
     @GetMapping("/{id}")
@@ -56,7 +56,7 @@ public class ProductController {
     ) {
         ProductResponse response = productService.readDetail(id);
         return ResponseEntity.ok(
-            ApiResponse.success(response, MessageConstants.FUNDED_PRODUCT_DETAIL.getMessage()));
+            ApiResponse.success(response, MessageConstants.READ_PRODUCT_DETAIL.getMessage()));
     }
 
 
