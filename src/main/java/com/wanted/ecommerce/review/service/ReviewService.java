@@ -1,12 +1,12 @@
 package com.wanted.ecommerce.review.service;
 
-import com.wanted.ecommerce.review.domain.Review;
+import com.wanted.ecommerce.review.dto.request.ReviewPageableRequest;
 import com.wanted.ecommerce.review.dto.response.RatingResponse;
-import java.util.List;
+import com.wanted.ecommerce.review.dto.response.ReviewPaginationResponse;
 
 public interface ReviewService {
 
-    List<Review> getReviews(Long productId);
+    ReviewPaginationResponse getProductReviews(Long productId, ReviewPageableRequest request);
 
     RatingResponse createRatingResponse(Long productId);
 }
