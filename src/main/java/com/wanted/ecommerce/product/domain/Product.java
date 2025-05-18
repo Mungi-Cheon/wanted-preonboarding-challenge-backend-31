@@ -91,7 +91,7 @@ public class Product {
 
 
     @PrePersist
-    void setCreatedAt() {
+    void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

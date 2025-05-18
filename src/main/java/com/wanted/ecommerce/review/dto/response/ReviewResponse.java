@@ -1,6 +1,6 @@
 package com.wanted.ecommerce.review.dto.response;
 
-import com.wanted.ecommerce.review.domain.Review;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.wanted.ecommerce.user.dto.response.UserResponse;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -12,23 +12,11 @@ public record ReviewResponse(
     Integer rating,
     String title,
     String content,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     LocalDateTime updatedAt,
     boolean verifiedPurchase,
     Integer helpfulVotes
 ) {
-
-    public static ReviewResponse of(Review review){
-        return ReviewResponse.builder()
-            .id(review.getId())
-            .user(UserResponse.of(review.getUser()))
-            .rating(review.getRating())
-            .title(review.getTitle())
-            .content(review.getContent())
-            .createdAt(review.getCreatedAt())
-            .updatedAt(review.getUpdatedAt())
-            .verifiedPurchase(review.getVerifiedPurchase())
-            .helpfulVotes(review.getHelpfulVotes())
-            .build();
-    }
 }

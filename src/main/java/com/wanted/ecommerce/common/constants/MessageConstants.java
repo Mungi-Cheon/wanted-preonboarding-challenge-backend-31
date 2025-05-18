@@ -18,7 +18,8 @@ public enum MessageConstants {
     READ_CATEGORIES("카테고리 목록을 성공적으로 조회했습니다."),
     READ_CATEGORY_PRODUCTS("카테고리 상품 목록을 성공적으로 조회했습니다."),
     READ_ALL_MAIN_CONTENTS("메인 페이지 상품 목록을 성공적으로 조회했습니다."),
-    READ_PRODUCT_REVIEWS("상품 리뷰를 성공적으로 조회했습니다.");
+    READ_PRODUCT_REVIEWS("상품 리뷰를 성공적으로 조회했습니다."),
+    CREATED_REVIEW("리뷰가 성공적으로 등록되었습니다.");
 
     private final String message;
 }
