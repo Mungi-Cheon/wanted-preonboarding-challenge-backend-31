@@ -85,6 +85,18 @@ public class ReviewServiceImpl implements ReviewService {
         return mapper.mapToReviewResponse(review);
     }
 
+    @Transactional
+    @Override
+    public void deleteReview(Long reviewId, Long userId) {
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorType.RESOURCE_NOT_FOUND));
+
+        if(!review.getUser().getId().equals(userId)){
+            throw new ForbiddenException(ErrorType.FORBIDDEN);
+        }
+        reviewRepository.delete(review);
+    }
+
     @Override
     public RatingResponse createRatingResponse(Long productId) {
         List<Review> reviews = reviewRepository.findAllReviewByProductId(productId);

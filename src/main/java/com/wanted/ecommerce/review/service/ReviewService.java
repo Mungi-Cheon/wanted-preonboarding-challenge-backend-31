@@ -15,6 +15,8 @@ public interface ReviewService {
 
     ReviewResponse updateReview(Long userId, Long reviewId, ReviewUpdateRequest request);
 
+    void deleteReview(Long reviewId, Long userId);
+
     RatingResponse createRatingResponse(Long productId);
 
 }

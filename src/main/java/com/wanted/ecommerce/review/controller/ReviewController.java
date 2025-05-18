@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,5 +61,13 @@ public class ReviewController {
 
         return ResponseEntity.ok(
             ApiResponse.success(response, MessageConstants.UPDATED_REVIEW.getMessage()));
+    }
+
+    @DeleteMapping("/reviews/{id}")
+    public ResponseEntity<?> deleteReview(@PathVariable("id") Long reviewId) {
+        Long userId = 1L; // User 관련은 요구 사항이 없고 구현된 것이 없으므로 임시로 설정
+        reviewService.deleteReview(reviewId, userId);
+        return ResponseEntity.ok(
+            ApiResponse.success(null, MessageConstants.DELETED_REVIEW.getMessage()));
     }
 }
