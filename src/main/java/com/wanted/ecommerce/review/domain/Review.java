@@ -1,6 +1,7 @@
 package com.wanted.ecommerce.review.domain;
 
 import com.wanted.ecommerce.product.domain.Product;
+import com.wanted.ecommerce.review.dto.request.ReviewUpdateRequest;
 import com.wanted.ecommerce.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +15,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +29,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -65,5 +68,12 @@ public class Review {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+
+    public void update(ReviewUpdateRequest request) {
+        Optional.ofNullable(request.getRating()).ifPresent(rating -> this.rating = rating);
+        Optional.ofNullable(request.getTitle()).ifPresent(title -> this.title = title);
+        Optional.ofNullable(request.getContent()).ifPresent(content -> this.content = content);
     }
 }
